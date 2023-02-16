@@ -207,23 +207,13 @@ function ISPConfig_unsuspendServer(User $user, $params, Orders $order, OrderProd
         ),
     );
 
-    $result = $webService
-        ->with(array('customer_no' => $user->id))
-        ->getClientByCustomerNo()
-        ->response();
-    $result = json_decode($result, true);
-    if (isset($result['error'])) {
-        return false;
-    }
-    if (empty($result)) {
-        return false;
-    }
+    $result = ISPConfig_getClient($user, $webService);
     if (!isset($params['config']['domain_id'])){
         return false;
     }
     // Get website by domain
     $result = $webService
-        ->with(array('domain_id' => $params['config']['domain_id'], 'client_id' => $result['client_id'], 'active' => 'y'))
+        ->with(array('domain_id' => $params['config']['domain_id'], 'client_id' => $result, 'active' => 'y'))
         ->updateWebDomain()
         ->response();
     $result = json_decode($result, true);
@@ -239,14 +229,7 @@ function ISPConfig_terminateServer($user, $params, $order) {
         ),
     );
 
-    $result = $webService
-        ->with(array('customer_no' => $user->id))
-        ->getClientByCustomerNo()
-        ->response();
-    $result = json_decode($result, true);
-    if (isset($result['error'])) {
-        return false;
-    }
+    $result = ISPConfig_getClient($user, $webService);
     if (empty($result)) {
         return false;
     }
