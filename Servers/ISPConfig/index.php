@@ -2,9 +2,9 @@
 
 // ISPConfig API
 use App\Helpers\ExtensionHelper;
-use App\Models\OrderProducts;
-use App\Models\Orders;
-use App\Models\Products;
+use App\Models\OrderProduct;
+use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 
 include_once __DIR__ . '/ISPConfigWS.php';
@@ -60,7 +60,7 @@ function ISPConfig_getProductConfig()
     ];
 }
 
-function ISPConfig_createServer($user, $params, $order, OrderProducts $product)
+function ISPConfig_createServer($user, $params, $order, OrderProduct $product)
 {
     $webService = new ISPConfigWS\ISPConfigWS(
         array(
@@ -110,7 +110,7 @@ function ISPConfig_createServer($user, $params, $order, OrderProducts $product)
     return true;
 }
 
-function ISPConfig_getUserConfig(Products $product)
+function ISPConfig_getUserConfig(Product $product)
 {
     return [
         [
@@ -196,7 +196,7 @@ function ISPConfig_suspendServer(User $user, $params, Orders $order, OrderProduc
     $result = json_decode($result, true);
 }
 
-function ISPConfig_unsuspendServer(User $user, $params, Orders $order, OrderProducts $product)
+function ISPConfig_unsuspendServer(User $user, $params, Order $order, OrderProduct $product)
 {
     // deactivate the domain
     $webService = new ISPConfigWS\ISPConfigWS(

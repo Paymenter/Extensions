@@ -12,6 +12,7 @@ Go to the paymenter admin panel and enable the extension you want to use.
 | Mollie | [Mollie](https://mollie.com) payment gateway | @CorwinDev | [Link](https://github.com/Paymenter/Extensions/tree/main/Gateways/Mollie)
 | Xendit | [Xendit](https://xendit.com) payment gateway | @CorwinDev | [Link](https://github.com/Paymenter/Extensions/tree/main/Gateways/Xendit)
 | PayPal | [PayPal](https://developer.paypal.com) payment gateway | @CorwinDev | [Link](https://github.com/Paymenter/Extensions/tree/main/Gateways/PayPal)
+| PayPal IPN | [PayPal](https://developer.paypal.com) IPN payment gateway | @CorwinDev | [Link](https://github.com/Paymenter/Extensions/tree/main/Gateways/PayPal_IPN)
 | Stripe | [Stripe](https://stripe.com) payment gateway | @CorwinDev | [Link](https://github.com/Paymenter/Extensions/tree/main/Gateways/Stipe)
 | Stripe Sofort | Direct sofort payment gateway | @CorwinDev | [Link](https://github.com/Paymenter/Extensions/tree/main/Gateways/StripeSofort)
 | **Servers** |  | |  |

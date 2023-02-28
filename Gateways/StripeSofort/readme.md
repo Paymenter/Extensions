@@ -1,7 +1,5 @@
 # Sofort Direct Payment Gateway for Stripe
 
-Works with same apikeys as the Stripe gateway.
-
 ## Installation
 Download the code and place it in the `app/Extensions/Gateways/StripeSofort` directory.
 
