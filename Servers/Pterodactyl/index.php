@@ -104,12 +104,14 @@ function Pterodactyl_getProductConfig()
             'name' => 'skip_scripts',
             'friendlyName' => 'Pterodactyl Skip Scripts',
             'type' => 'boolean',
+            'description' => 'Decides if Pterodactyl will skip install scripts',
         ],
         [
             'name' => 'allocation',
             'friendlyName' => 'Pterodactyl Allocation',
             'type' => 'text',
             'required' => true,
+            'description' => 'How many ports the user can allocate. Usually, 1 will work',
         ],
     ];
 }
