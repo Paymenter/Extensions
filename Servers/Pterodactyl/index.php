@@ -111,7 +111,7 @@ function Pterodactyl_getProductConfig()
             'friendlyName' => 'Pterodactyl Allocation',
             'type' => 'text',
             'required' => true,
-            'description' => 'How many ports the user can allocate. Usually, 1 will work',
+            'description' => 'How many ports the user can allocate. Must be at least one.',
         ],
     ];
 }
