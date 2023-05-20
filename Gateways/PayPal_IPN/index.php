@@ -1,8 +1,9 @@
 <?php
+
 use App\Helpers\ExtensionHelper;
 
-function PayPal_IPN_pay($total, $products, $orderId) {
-    
+function PayPal_IPN_pay($total, $products, $orderId)
+{
     // Redirect to PayPal
     $paypal_url = ExtensionHelper::getConfig('PayPal_IPN', 'live') ? 'https://www.paypal.com/cgi-bin/webscr' : 'https://www.sandbox.paypal.com/cgi-bin/webscr';
     $paypal_email = ExtensionHelper::getConfig('PayPal_IPN', 'paypal_email');
@@ -29,9 +30,9 @@ function PayPal_IPN_pay($total, $products, $orderId) {
     $querystring .= 'amount=' . urlencode($amount) . '&';
     $querystring .= 'custom=' . urlencode($custom) . '&';
     $querystring .= 'currency_code=' . urlencode($currency);
+
     return $paypal_url . $querystring;
 }
-
 
 function PayPal_IPN_getConfig()
 {
@@ -40,8 +41,8 @@ function PayPal_IPN_getConfig()
             'type' => 'text',
             'name' => 'paypal_email',
             'friendlyName' => 'PayPal Email',
-            'description' => 'Your PayPal email address', 
-            'required' => true,          
+            'description' => 'Your PayPal email address',
+            'required' => true,
         ],
         'live' => [
             'type' => 'boolean',
@@ -49,7 +50,7 @@ function PayPal_IPN_getConfig()
             'friendlyName' => 'Live',
             'description' => 'Check this box if you want to use the live PayPal API',
             'required' => false,
-        ],	
+        ],
     ];
 }
 
@@ -57,23 +58,25 @@ function PayPal_IPN_webhook($request)
 {
     $raw_post_data = file_get_contents('php://input');
     $raw_post_array = explode('&', $raw_post_data);
-    $myPost = array();
+    $myPost = [];
     foreach ($raw_post_array as $keyval) {
         $keyval = explode('=', $keyval);
-        if (count($keyval) == 2)
+        if (count($keyval) == 2) {
             $myPost[$keyval[0]] = urldecode($keyval[1]);
+        }
     }
     $req = 'cmd=_notify-validate';
     foreach ($myPost as $key => $value) {
-            $value = urlencode($value);
-        
+        $value = urlencode($value);
+
         $req .= "&$key=$value";
     }
 
-    if(ExtensionHelper::getConfig('PayPal_IPN', 'live'))
+    if (ExtensionHelper::getConfig('PayPal_IPN', 'live')) {
         $ch = curl_init('https://ipnpb.paypal.com/cgi-bin/webscr');
-    else
+    } else {
         $ch = curl_init('https://ipnpb.sandbox.paypal.com/cgi-bin/webscr');
+    }
     curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -81,16 +84,16 @@ function PayPal_IPN_webhook($request)
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
     curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Connection: Close']);
     if (!($res = curl_exec($ch))) {
-        error_log("Got " . curl_error($ch) . " when processing IPN data");
+        error_log('Got ' . curl_error($ch) . ' when processing IPN data');
         curl_close($ch);
         exit;
     }
     curl_close($ch);
-    if ($res == 'VERIFIED') { 
+    if ($res == 'VERIFIED') {
         error_log($myPost['custom']);
         ExtensionHelper::paymentDone($myPost['custom']);
     }
-    header("HTTP/1.1 200 OK");
+    header('HTTP/1.1 200 OK');
 }

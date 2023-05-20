@@ -149,7 +149,7 @@ function Pterodactyl_deleteRequest($url)
     return $response;
 }
 
-function Pterodactyl_createServer($user, $parmas, $order, $product)
+function Pterodactyl_createServer($user, $parmas, $order, $product, $configurableOptions)
 {
     if (Pterodactyl_serverExists($product->id)) {
         ExtensionHelper::error('Pterodactyl', 'Server already exists for order ' . $product->id);
@@ -157,7 +157,9 @@ function Pterodactyl_createServer($user, $parmas, $order, $product)
         return;
     }
     $url = pteroConfig('host') . '/api/application/servers';
-    $eggData = Pterodactyl_getRequest(pteroConfig('host') . '/api/application/nests/' . $parmas['nest'] . '/eggs/' . $parmas['egg'] . '?include=variables')->json();
+    $nest_id = isset($configurableOptions['nest_id']) ? $configurableOptions['nest_id'] : $parmas['nest'];
+    $egg_id = isset($configurableOptions['egg']) ? $configurableOptions['egg'] : $parmas['egg'];
+    $eggData = Pterodactyl_getRequest(pteroConfig('host') . '/api/application/nests/' . $nest_id . '/eggs/' . $egg_id . '?include=variables')->json();
     if (!isset($eggData['attributes'])) {
         ExtensionHelper::error('Pterodactyl', 'No egg data found for ' . $parmas['egg']);
 
@@ -168,10 +170,25 @@ function Pterodactyl_createServer($user, $parmas, $order, $product)
         $attr = $val['attributes'];
         $var = $attr['env_variable'];
         $default = $attr['default_value'];
+        // If the variable is configurable, get the value from the configurable options
+        if (isset($configurableOptions[$var])) {
+            $default = $configurableOptions[$var];
+        }
         $environment[$var] = $default;
     }
+    $cpu = isset($configurableOptions['cpu']) ? $configurableOptions['cpu'] : $parmas['cpu'];
+    $io = isset($configurableOptions['io']) ? $configurableOptions['io'] : $parmas['io'];
+    $disk = isset($configurableOptions['disk']) ? $configurableOptions['disk'] : $parmas['disk'];
+    $swap = isset($configurableOptions['swap']) ? $configurableOptions['swap'] : $parmas['swap'];
+    $memory = isset($configurableOptions['memory']) ? $configurableOptions['memory'] : $parmas['memory'];
+    $allocations = isset($configurableOptions['allocation']) ? $configurableOptions['allocation'] : $parmas['allocation'];
+    $location = isset($configurableOptions['location']) ? $configurableOptions['location'] : $parmas['location'];
+    $databases = isset($configurableOptions['databases']) ? $configurableOptions['databases'] : $parmas['databases'];
+    $backups = isset($configurableOptions['backups']) ? $configurableOptions['backups'] : $parmas['backups'];
+    $startup = isset($configurableOptions['startup']) ? $configurableOptions['startup'] : $eggData['attributes']['startup'];
+    $node = isset($configurableOptions['node']) ? $configurableOptions['node'] : $parmas['node'];
 
-    if ($parmas['node']) {
+    if ($node) {
         $allocation = Pterodactyl_getRequest(pteroConfig('host') . '/api/application/nodes/' . $parmas['node'] . '/allocations');
         $allocation = $allocation->json();
         foreach ($allocation['data'] as $key => $val) {
@@ -183,15 +200,15 @@ function Pterodactyl_createServer($user, $parmas, $order, $product)
         $json = [
             'name' => Pterodactyl_random_string(8) . '-' . $product->id,
             'user' => (int) Pterodactyl_getUser($user),
-            'egg' => (int) $parmas['egg'],
+            'egg' => (int) $egg_id,
             'docker_image' => $eggData['attributes']['docker_image'],
-            'startup' => $eggData['attributes']['startup'],
+            'startup' => $startup,
             'limits' => [
-                'memory' => (int) $parmas['memory'],
-                'swap' => (int) $parmas['swap'],
-                'disk' => (int) $parmas['disk'],
-                'io' => (int) $parmas['io'],
-                'cpu' => (int) $parmas['cpu'],
+                'memory' => (int) $memory,
+                'swap' => (int) $swap,
+                'disk' => (int) $disk,
+                'io' => (int) $io,
+                'cpu' => (int) $cpu,
             ],
             'feature_limits' => [
                 'databases' => $parmas['databases'] ? (int) $parmas['databases'] : null,
@@ -208,23 +225,23 @@ function Pterodactyl_createServer($user, $parmas, $order, $product)
         $json = [
             'name' => Pterodactyl_random_string(8) . '-' . $product->id,
             'user' => (int) Pterodactyl_getUser($user),
-            'egg' => (int) $parmas['egg'],
+            'egg' => (int) $egg_id,
             'docker_image' => $eggData['attributes']['docker_image'],
-            'startup' => $eggData['attributes']['startup'],
+            'startup' => $startup,
             'limits' => [
-                'memory' => (int) $parmas['memory'],
-                'swap' => (int) $parmas['swap'],
-                'disk' => (int) $parmas['disk'],
-                'io' => (int) $parmas['io'],
-                'cpu' => (int) $parmas['cpu'],
+                'memory' => (int) $memory,
+                'swap' => (int) $swap,
+                'disk' => (int) $disk,
+                'io' => (int) $io,
+                'cpu' => (int) $cpu,
             ],
             'feature_limits' => [
-                'databases' => $parmas['databases'] ? (int) $parmas['databases'] : null,
-                'allocations' => $parmas['allocation'],
-                'backups' => $parmas['backups'],
+                'databases' => $databases ? (int) $databases : null,
+                'allocations' => $allocations,
+                'backups' => $backups,
             ],
             'deploy' => [
-                'locations' => [$parmas['location']],
+                'locations' => [(int) $location],
                 'dedicated_ip' => false,
                 'port_range' => [],
             ],
@@ -273,7 +290,7 @@ function Pterodactyl_getUser($user)
             'root_admin' => false,
         ];
         $response = Pterodactyl_postRequest($url, $json);
-        if (!$response->successful()) {
+        if(!$response->successful()) {
             ExtensionHelper::error('Pterodactyl', 'Failed to create user for order ' . $product->id . ' with error ' . $response->body());
         }
         $user = $response->json();
@@ -320,7 +337,7 @@ function Pterodactyl_unsuspendServer($user, $params, $order, $product)
     return false;
 }
 
-function Pterodactyl_terminateServer($user, $params, $order, $product)
+function Pterodactyl_terminateServer($user, $params,$order, $product)
 {
     $server = Pterodactyl_serverExists($product->id);
     if ($server) {
