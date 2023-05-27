@@ -115,12 +115,6 @@ function Pterodactyl_getProductConfig()
             "Size" => 25,
             'description' => 'Port ranges seperated by comma to assign to the server (Example: 25565-25570,25580-25590) (optional)',
         ],
-        [
-            'name' => 'skip_scripts',
-            'friendlyName' => 'Pterodactyl Skip Scripts',
-            'type' => 'boolean',
-            'description' => 'Decides if Pterodactyl will skip install scripts',
-        ],
     ];
 }
 
