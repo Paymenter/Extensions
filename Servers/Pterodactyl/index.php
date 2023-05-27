@@ -101,17 +101,25 @@ function Pterodactyl_getProductConfig()
             'required' => true,
         ],
         [
-            'name' => 'skip_scripts',
-            'friendlyName' => 'Pterodactyl Skip Scripts',
-            'type' => 'boolean',
-            'description' => 'Decides if Pterodactyl will skip install scripts',
-        ],
-        [
             'name' => 'allocation',
             'friendlyName' => 'Pterodactyl Allocation',
             'type' => 'text',
             'required' => true,
             'description' => 'How many ports the user can allocate. Must be at least one.',
+        ],
+        [
+            'name' => 'port_range',
+            'friendlyName' => 'Port Range',
+            'type' => 'text',
+            'required' => false,
+            "Size" => 25,
+            'description' => 'Port ranges seperated by comma to assign to the server (Example: 25565-25570,25580-25590) (optional)',
+        ],
+        [
+            'name' => 'skip_scripts',
+            'friendlyName' => 'Pterodactyl Skip Scripts',
+            'type' => 'boolean',
+            'description' => 'Decides if Pterodactyl will skip install scripts',
         ],
     ];
 }
@@ -187,6 +195,8 @@ function Pterodactyl_createServer($user, $parmas, $order, $product, $configurabl
     $backups = isset($configurableOptions['backups']) ? $configurableOptions['backups'] : $parmas['backups'];
     $startup = isset($configurableOptions['startup']) ? $configurableOptions['startup'] : $eggData['attributes']['startup'];
     $node = isset($configurableOptions['node']) ? $configurableOptions['node'] : $parmas['node'];
+    $port_range = isset($configurableOptions['port_range']) ? $configurableOptions['port_range'] : $parmas['port_range'];
+
 
     if ($node) {
         $allocation = Pterodactyl_getRequest(pteroConfig('host') . '/api/application/nodes/' . $parmas['node'] . '/allocations');
@@ -243,7 +253,7 @@ function Pterodactyl_createServer($user, $parmas, $order, $product, $configurabl
             'deploy' => [
                 'locations' => [(int) $location],
                 'dedicated_ip' => false,
-                'port_range' => [],
+                'port_range' => [$port_range],
             ],
             'environment' => $environment,
             'external_id' => (string) $product->id,
