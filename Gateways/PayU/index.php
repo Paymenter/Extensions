@@ -4,7 +4,7 @@ use App\Helpers\ExtensionHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
-function UPay_getConfig()
+function PayU_getConfig()
 {
     return [
         [
@@ -40,10 +40,10 @@ function UPay_getConfig()
     ];
 }
 
-function UPay_pay($total, $products, $invoiceId)
+function PayU_pay($total, $products, $invoiceId)
 {
-    $apiKey = ExtensionHelper::getConfig('UPay', 'test_mode') ? ExtensionHelper::getConfig('UPay', 'test_merchant_key') : ExtensionHelper::getConfig('UPay', 'merchant_key');
-    $salt = ExtensionHelper::getConfig('UPay', 'test_mode') ? ExtensionHelper::getConfig('UPay', 'test_merchant_salt') : ExtensionHelper::getConfig('UPay', 'merchant_salt');
+    $apiKey = ExtensionHelper::getConfig('PayU', 'test_mode') ? ExtensionHelper::getConfig('PayU', 'test_merchant_key') : ExtensionHelper::getConfig('PayU', 'merchant_key');
+    $salt = ExtensionHelper::getConfig('PayU', 'test_mode') ? ExtensionHelper::getConfig('PayU', 'test_merchant_salt') : ExtensionHelper::getConfig('PayU', 'merchant_salt');
     $txnId = $invoiceId;
     $amount = $total;
     $productInfo = $products[0]->name;
@@ -67,7 +67,7 @@ function UPay_pay($total, $products, $invoiceId)
         'furl' => $furl,
         'hash' => $hash,
     );
-    if (ExtensionHelper::getConfig('UPay', 'test_mode')) {
+    if (ExtensionHelper::getConfig('PayU', 'test_mode')) {
         $url = "https://test.payu.in/_payment";
     } else {
         $url = "https://secure.payu.in/_payment";
@@ -84,12 +84,12 @@ function UPay_pay($total, $products, $invoiceId)
 
 
 
-function UPay_success(Request $request)
+function PayU_success(Request $request)
 {
     $posted = $request->all();
     $orderId = $posted['txnid'];
-    $apiKey = ExtensionHelper::getConfig('UPay', 'test_mode') ? ExtensionHelper::getConfig('UPay', 'test_merchant_key') : ExtensionHelper::getConfig('UPay', 'merchant_key');
-    $salt = ExtensionHelper::getConfig('UPay', 'test_mode') ? ExtensionHelper::getConfig('UPay', 'test_merchant_salt') : ExtensionHelper::getConfig('UPay', 'merchant_salt');
+    $apiKey = ExtensionHelper::getConfig('PayU', 'test_mode') ? ExtensionHelper::getConfig('PayU', 'test_merchant_key') : ExtensionHelper::getConfig('PayU', 'merchant_key');
+    $salt = ExtensionHelper::getConfig('PayU', 'test_mode') ? ExtensionHelper::getConfig('PayU', 'test_merchant_salt') : ExtensionHelper::getConfig('PayU', 'merchant_salt');
     $hashString = "$apiKey|verify_payment|$orderId|$salt";
     $hash = hash('sha512', $hashString);
 
@@ -100,7 +100,7 @@ function UPay_success(Request $request)
         'hash' => $hash,
     );
 
-    if (ExtensionHelper::getConfig('UPay', 'test_mode')) {
+    if (ExtensionHelper::getConfig('PayU', 'test_mode')) {
         $url = "https://test.payu.in/merchant/postservice?form=2";
     } else {
         $url = "https://info.payu.in/merchant/postservice?form=2";
@@ -120,7 +120,7 @@ function UPay_success(Request $request)
     }
 }
 
-function UPay_cancel(Request $request)
+function PayU_cancel(Request $request)
 {
     $posted = $request->all();
     return redirect()->route('clients.invoice.show', $posted['txnid'])->with('error', 'Payment Cancelled');
