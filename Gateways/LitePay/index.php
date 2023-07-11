@@ -49,4 +49,7 @@ function LitePay_webhook(Request $request)
     if ($secret !== ExtensionHelper::getConfig('LitePay', 'secret'))
         return;
     ExtensionHelper::paymentDone($invoiceId);
+
+    // Return *ok*
+    return response('*ok*');
 }
