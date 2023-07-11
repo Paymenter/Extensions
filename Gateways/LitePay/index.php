@@ -44,6 +44,8 @@ function LitePay_webhook(Request $request)
     $input = $request->all();
     $invoiceId = $input['invoiceId'];
     $secret = $input['secret'];
+    if (!isset($invoiceId) || !isset($secret))
+        return;
     if ($secret !== ExtensionHelper::getConfig('LitePay', 'secret'))
         return;
     ExtensionHelper::paymentDone($invoiceId);
