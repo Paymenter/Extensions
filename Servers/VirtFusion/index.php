@@ -23,12 +23,21 @@ function VirtFusion_getConfig()
 
 function VirtFusion_getProductConfig()
 {
+    $packages = VirtFusion_getRequest('/api/v1/packages');
+    $package = [];
+    foreach ($packages->json()['data'] as $p) {
+        $package[] = [
+            'name' => $p['name'],
+            'value' => $p['id'],
+        ];
+    }
     return [
         [
             'name' => 'package',
-            'type' => 'text',
-            'friendlyName' => 'Package ID',
+            'type' => 'dropdown',
+            'friendlyName' => 'Package',
             'required' => true,
+            'options' => $package,
         ],
         [
             'name' => 'hypervisor',
@@ -45,19 +54,13 @@ function VirtFusion_getProductConfig()
     ];
 }
 
-function VirtFusion_createServer($user, $params, $order)
+function VirtFusion_createServer($user, $params, $order, $product, $configurableOptions)
 {
-    $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
-    $host = ExtensionHelper::getConfig('VirtFusion', 'host');
     $package = $params['package'];
 
     $user = VirtFusion_getUser($user);
-    $response = Http::withHeaders([
-        'Authorization' => 'Bearer ' . $apikey,
-        'Accept' => 'Application/json',
-        'Content-Type' => 'application/json',
-    ])->post(
-        $host . '/api/v1/servers',
+    $response = VirtFusion_postRequest(
+        '/api/v1/servers',
         [
             'packageId' => $package,
             'userId' => $user,
@@ -65,18 +68,18 @@ function VirtFusion_createServer($user, $params, $order)
             'ipv4' => $params['ips'],
         ]
     );
-    if($response->json()['errors']) {
-        //Array to string conversion
+    if (isset($response->json()['errors'])) {
+        // Array to string conversion
         $error = implode(" ", $response->json()['errors']);
         ExtensionHelper::error('VirtFusion', 'Failed to create server' . $error);
         return;
     }
-    ExtensionHelper::setOrderProductConfig('server_id', $response->json()['data']['id'], $params['config_id']);
+    ExtensionHelper::setOrderProductConfig('server_id', $response->json()['data']['id'], $product->id);
 
     return true;
 }
 
-function VirtFusion_getUser($user)
+function VirtFusion_getRequest($url)
 {
     $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
     $host = ExtensionHelper::getConfig('VirtFusion', 'host');
@@ -86,24 +89,44 @@ function VirtFusion_getUser($user)
         'Accept' => 'Application/json',
         'Content-Type' => 'application/json',
     ])->get(
-        $host . '/api/v1/users/' . $user->id . '/byExtRelation'
+        $host . $url
     );
+    return $response;
+}
+
+function VirtFusion_postRequest($url, $data)
+{
+    $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
+    $host = ExtensionHelper::getConfig('VirtFusion', 'host');
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . $apikey,
+        'Accept' => 'Application/json',
+        'Content-Type' => 'application/json',
+    ])->post(
+        $host . $url,
+        $data
+    );
+    return $response;
+}
+
+function VirtFusion_getUser($user)
+{
+    $response = VirtFusion_getRequest('/api/v1/users/' . $user->id . '/byExtRelation');
+
     if (isset($response->json()['data'])) {
         return $response->json()['data']['id'];
     } else {
         // Create user
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apikey,
-            'Accept' => 'Application/json',
-            'Content-Type' => 'application/json',
-        ])->post(
-            $host . '/api/v1/users',
+        $response = VirtFusion_postRequest(
+            '/api/v1/users',
             [
                 'name' => $user->name,
                 'email' => $user->email,
                 'extRelationId' => $user->id,
             ]
         );
+
         if ($response->status() == 200) {
             return $response->json()['data']['id'];
         } else {
@@ -121,12 +144,12 @@ function VirtFusion_suspendServer($user, $params, $order)
     $server = $params['config']['server_id'];
 
     $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apikey,
-            'Accept' => 'Application/json',
-            'Content-Type' => 'application/json',
-        ])->post(
-            $host . '/api/v1/servers/' . $server . '/suspend'
-        );
+        'Authorization' => 'Bearer ' . $apikey,
+        'Accept' => 'Application/json',
+        'Content-Type' => 'application/json',
+    ])->post(
+        $host . '/api/v1/servers/' . $server . '/suspend'
+    );
     if ($response->status() == 204) {
         return true;
     } else {
@@ -184,4 +207,33 @@ function VirtFusion_terminateServer($user, $params, $order)
     }
 
     return true;
+}
+
+function VirtFusion_getCustomPages($user, $params, $order, $product, $configurableOptions)
+{
+    $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
+    $host = ExtensionHelper::getConfig('VirtFusion', 'host');
+    $server = $params['config']['server_id'];
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . $apikey,
+        'Accept' => 'Application/json',
+        'Content-Type' => 'application/json',
+    ])->get(
+        $host . '/api/v1/servers/' . $server
+    );
+
+    if ($response->status() !== 200) {
+        ExtensionHelper::error('VirtFusion', 'Failed to get custom pages');
+
+        return;
+    }
+
+    return [
+        'name' => 'VirtFusion',
+        'template' => 'virtfusion::control',
+        'data' => [
+            'details' =>(object) $response->json()['data'],
+        ], 
+    ];
 }
