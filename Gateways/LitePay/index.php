@@ -32,7 +32,7 @@ function LitePay_pay($total, $products, $invoiceId)
         'invoice' => $invoiceId,
         'price' => $total,
         'currency' => ExtensionHelper::getCurrency(),
-        'callbackUrl' => url('/extensions/litepay/webhook') . '?invoiceId=' . $invoiceId,
+        'callbackUrl' => url('/extensions/litepay/webhook') . '?invoiceId=' . $invoiceId . '&secret=' . ExtensionHelper::getConfig('LitePay', 'secret'),
         'returnUrl' => route('clients.invoice.show', $invoiceId),
     ]]);
 
@@ -43,5 +43,8 @@ function LitePay_webhook(Request $request)
 {
     $input = $request->all();
     $invoiceId = $input['invoiceId'];
+    $secret = $input['secret'];
+    if ($secret !== ExtensionHelper::getConfig('LitePay', 'secret'))
+        return;
     ExtensionHelper::paymentDone($invoiceId);
 }
