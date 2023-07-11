@@ -14,7 +14,7 @@ function LitePay_getConfig()
         ],
         [
             'name' => 'merchant_id',
-            'friendlyName' => 'Merchant ID',
+            'friendlyName' => 'VENDOR ID',
             'type' => 'text',
             'required' => true,
         ],
