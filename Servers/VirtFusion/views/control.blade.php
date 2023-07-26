@@ -7,7 +7,7 @@
             <div class="font-bold">CPU:</div>
         </div>
         <div class="flex-col ml-4">
-            <div>{{ $details->name ?? 'N/A'}}</div>
+            <div>@empty($details->name) N/A @else {{ $details->name }} @endempty</div>
             <div>{{ $details->hostname ?? 'N/A'}}</div>
             <div>{{ $details->settings['resources']['memory'] ?? 'N/A'}} MB</div>
             <div>{{ $details->settings['resources']['cpuCores'] ?? 'N/A' }} @if($details->settings['resources']['cpuCores'] > 1)cores @else core @endif</div>
@@ -27,4 +27,11 @@
             <div>{{ $details->settings['resources']['traffic'] ?? 'N/A'}} MB</div>
         </div>
     </div>
+
+    
 </div>
+
+<p class="mt-8">Manage your server via our dedicated control panel. You will be automatically authenticated and the control panel will open in a new tab.</p>
+<a class="button button-primary mt-2" href="{{ route('extensions.virtfusion.login', $orderProduct->id) }}" target="_blank">
+    Login to control panel
+</a>

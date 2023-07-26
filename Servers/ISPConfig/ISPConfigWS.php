@@ -1,6 +1,5 @@
 <?php
-
-namespace ISPConfigWS;
+namespace App\Extensions\Servers\ISPConfig;
 
 use SOAPclient;
 
