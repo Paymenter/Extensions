@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Extensions\Gateways\LitePay;
+
 if (!extension_loaded('curl')) {
     throw new \Exception('cURL extension seems not to be installed');
 }
