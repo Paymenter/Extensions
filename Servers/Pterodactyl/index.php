@@ -226,7 +226,7 @@ function Pterodactyl_createServer($user, $parmas, $order, $product, $configurabl
     $backups = isset($configurableOptions['backups']) ? $configurableOptions['backups'] : $parmas['backups'];
     $startup = isset($configurableOptions['startup']) ? $configurableOptions['startup'] : $eggData['attributes']['startup'];
     $node = isset($configurableOptions['node']) ? $configurableOptions['node'] : $parmas['node'];
-    $port_range = isset($configurableOptions['port_range']) ? $configurableOptions['port_range'] : $parmas['port_range'];
+    $port_range = isset($configurableOptions['port_range']) ? $configurableOptions['port_range'] : $parmas['port_range'] ??[];
 
 
     if ($node) {
