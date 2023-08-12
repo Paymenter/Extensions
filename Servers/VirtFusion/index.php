@@ -1,6 +1,8 @@
 <?php
 
 use App\Helpers\ExtensionHelper;
+use App\Models\OrderProduct;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 function VirtFusion_getConfig()
@@ -141,6 +143,9 @@ function VirtFusion_suspendServer($user, $params, $order)
 {
     $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
     $host = ExtensionHelper::getConfig('VirtFusion', 'host');
+    if (!isset($params['config']['server_id'])) {
+        return;
+    }
     $server = $params['config']['server_id'];
 
     $response = Http::withHeaders([
@@ -165,6 +170,9 @@ function VirtFusion_unsuspendServer($user, $params, $order)
 {
     $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
     $host = ExtensionHelper::getConfig('VirtFusion', 'host');
+    if (!isset($params['config']['server_id'])) {
+        return;
+    }
     $server = $params['config']['server_id'];
 
     $response = Http::withHeaders([
@@ -189,6 +197,9 @@ function VirtFusion_terminateServer($user, $params, $order)
 {
     $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
     $host = ExtensionHelper::getConfig('VirtFusion', 'host');
+    if (!isset($params['config']['server_id'])) {
+        return;
+    }
     $server = $params['config']['server_id'];
 
     $response = Http::withHeaders([
@@ -213,6 +224,9 @@ function VirtFusion_getCustomPages($user, $params, $order, $product, $configurab
 {
     $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
     $host = ExtensionHelper::getConfig('VirtFusion', 'host');
+    if (!isset($params['config']['server_id'])) {
+        return;
+    }
     $server = $params['config']['server_id'];
 
     $response = Http::withHeaders([
@@ -233,7 +247,45 @@ function VirtFusion_getCustomPages($user, $params, $order, $product, $configurab
         'name' => 'VirtFusion',
         'template' => 'virtfusion::control',
         'data' => [
-            'details' =>(object) $response->json()['data'],
-        ], 
+            'details' => (object) $response->json()['data'],
+        ],
     ];
+}
+
+function VirtFusion_getLink($user, $params, $order, $product, $configurableOptions)
+{
+    $apikey = ExtensionHelper::getConfig('VirtFusion', 'apikey');
+    $host = ExtensionHelper::getConfig('VirtFusion', 'host');
+    if (!isset($params['config']['server_id'])) {
+        return;
+    }
+    $server = $params['config']['server_id'];
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . $apikey,
+        'Accept' => 'Application/json',
+        'Content-Type' => 'application/json',
+    ])->get(
+        $host . '/api/v1/servers/' . $server
+    );
+    return $host . '/server/' . $response->json()['data']['uuid'];
+}
+
+
+function VirtFusion_login(OrderProduct $id, Request $request)
+{
+
+    if (!ExtensionHelper::hasAccess($id, auth()->user())) {
+        return response()->json(['error' => 'You do not have access to this server'], 403);
+    }
+    $params = ExtensionHelper::getParameters($id)->config;
+
+    $loginLink = VirtFusion_postRequest(
+        '/api/v1/users/' . auth()->user()->id . '/serverAuthenticationTokens/' . $params['config']['server_id'],
+        []
+    );
+
+    $loginLink = $loginLink->json()['data']['authentication']['endpoint_complete'];
+
+    return redirect(ExtensionHelper::getConfig('VirtFusion', 'host') . $loginLink);
 }
