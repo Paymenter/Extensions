@@ -228,6 +228,9 @@ function Pterodactyl_createServer($user, $parmas, $order, $product, $configurabl
     $node = isset($configurableOptions['node']) ? $configurableOptions['node'] : $parmas['node'];
     $port_range = isset($configurableOptions['port_range']) ? $configurableOptions['port_range'] : $parmas['port_range'] ??[];
 
+    $email = $user->email;
+    $parts = explode('@', $email);
+    $username = $parts[0];
 
     if ($node) {
         $allocation = Pterodactyl_getRequest(pteroConfig('host') . '/api/application/nodes/' . $parmas['node'] . '/allocations');
@@ -239,7 +242,7 @@ function Pterodactyl_createServer($user, $parmas, $order, $product, $configurabl
             }
         }
         $json = [
-            'name' => Pterodactyl_random_string(8) . '-' . $product->id,
+            'name' => $username . "'s " . $eggData['attributes']['name'] . "-" . $product->id,
             'user' => (int) Pterodactyl_getUser($user),
             'egg' => (int) $egg_id,
             'docker_image' => $eggData['attributes']['docker_image'],
@@ -264,7 +267,7 @@ function Pterodactyl_createServer($user, $parmas, $order, $product, $configurabl
         ];
     } else {
         $json = [
-            'name' => Pterodactyl_random_string(8) . '-' . $product->id,
+            'name' => $username . "'s " . $eggData['attributes']['name'] . "-" . $product->id,
             'user' => (int) Pterodactyl_getUser($user),
             'egg' => (int) $egg_id,
             'docker_image' => $eggData['attributes']['docker_image'],
@@ -318,12 +321,15 @@ function Pterodactyl_getUser($user)
     $url = pteroConfig('host') . '/api/application/users?filter%5Bemail%5D=' . $user->email;
     $response = Pterodactyl_getRequest($url);
     $users = $response->json();
+    $email = $user->email;
+    $parts = explode('@', $email);
+    $username = $parts[0];
     if (count($users['data']) > 0) {
         return $users['data'][0]['attributes']['id'];
     } else {
         $url = pteroConfig('host') . '/api/application/users';
         $json = [
-            'username' => Pterodactyl_random_string(8),
+            'username' => $username,
             'email' => $user->email,
             'first_name' => $user->name,
             'last_name' => 'User',
