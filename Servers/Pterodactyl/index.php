@@ -328,23 +328,39 @@ function Pterodactyl_getUser($user)
         return $users['data'][0]['attributes']['id'];
     } else {
         $url = pteroConfig('host') . '/api/application/users';
-        $json = [
-            'username' => $username,
-            'email' => $user->email,
-            'first_name' => $user->name,
-            'last_name' => 'User',
-            'language' => 'en',
-            'root_admin' => false,
-        ];
-        $response = Pterodactyl_postRequest($url, $json);
-        if(!$response->successful()) {
-            ExtensionHelper::error('Pterodactyl', 'Failed to create user for order ' . $product->id . ' with error ' . $response->body());
-        }
+        $originalUsername = $username;
+        $suffix = 1;
+
+        do {
+            $json = [
+                'username' => $username,
+                'email' => $user->email,
+                'first_name' => $user->name,
+                'last_name' => 'User',
+                'language' => 'en',
+                'root_admin' => false,
+            ];
+
+            $response = Pterodactyl_postRequest($url, $json);
+
+            if (!$response->successful()) {
+                $errorBody = $response->json();
+                if (isset($errorBody['errors'][0]['detail']) && $errorBody['errors'][0]['detail'] === 'The username has already been taken.') {
+                    // Add a number to the username and try again
+                    $username = $originalUsername . $suffix;
+                    $suffix++;
+                } else {
+                    ExtensionHelper::error('Pterodactyl', 'Failed to create user for order ' . $product->id . ' with error ' . $response->body());
+                }
+            }
+        } while (!$response->successful());
+
         $user = $response->json();
 
         return $user['attributes']['id'];
     }
 }
+
 
 function Pterodactyl_serverExists($order)
 {
