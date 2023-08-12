@@ -237,7 +237,7 @@ function VirtFusion_getCustomPages($user, $params, $order, $product, $configurab
         $host . '/api/v1/servers/' . $server
     );
 
-    if ($response->status() !== 200) {
+    if ($response->successful()) {
         ExtensionHelper::error('VirtFusion', 'Failed to get custom pages');
 
         return;
