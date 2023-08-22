@@ -1,3 +1,5 @@
+## This extensions is for Paymenter v0.7.1 and older
+
 # Extensions
 All public extensions for Paymenter
 
