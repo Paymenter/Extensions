@@ -9,6 +9,16 @@ use Illuminate\Http\Request;
 
 class Stripe extends Gateway
 {
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'Stripe',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }
+    
     public function getUrl($total, $products, $orderId)
     {
         $client = $this->stripeClient();
@@ -21,7 +31,7 @@ class Stripe extends Gateway
                     'product_data' => [
                         'name' => $product->name,
                     ],
-                    'unit_amount' => $product->price * 100,
+                    'unit_amount' => round($product->price / $product->quantity * 100, 0)
                 ],
                 'quantity' => $product->quantity,
             ];

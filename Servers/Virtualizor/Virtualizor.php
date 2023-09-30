@@ -10,6 +10,16 @@ use App\Extensions\Servers\Virtualizor\Virtualizor_Admin_API;
 
 class Virtualizor extends Server
 {
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'Virtualizor',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }
+    
     public function getConfig()
     {
         return [
@@ -51,6 +61,9 @@ class Virtualizor extends Server
         // Get os list
         $os = $admin->ostemplates();
         $allos = [];
+        if (!$os || !key($os['oslist']) || !key($os['oslist'][$product->settings()->get()->where('name', 'virt')->first()->value])) {
+            throw new \Exception('No OS found');
+        }
         foreach ($os['oslist'][$product->settings()->get()->where('name', 'virt')->first()->value] as $osid => $osname) {
             foreach ($osname as $osid => $osname) {
                 $allos[] = [
@@ -64,13 +77,16 @@ class Virtualizor extends Server
             [
                 'name' => 'hostname',
                 'type' => 'text',
+                'validation' => 'regex:/^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$/i',
                 'friendlyName' => 'Hostname',
+                'placeholder' => 'example.com',
                 'required' => true,
             ],
             [
                 'name' => 'password',
                 'type' => 'text',
-                'friendlyName' => 'Password',
+                'validation' => 'max:6|regex:/^[a-zA-Z0-9]+$/i',
+                'friendlyName' => 'Password (max 6 characters and only letters and numbers)',
                 'required' => true,
             ],
             [
@@ -94,6 +110,9 @@ class Virtualizor extends Server
 
         // Get Plan list
         $plans = $admin->plans();
+        if (!$plans) {
+            throw new \Exception('No plans found');
+        }
         $allplans = [];
         foreach ($plans['plans'] as $plan) {
             $allplans[] = [
@@ -149,7 +168,7 @@ class Virtualizor extends Server
         $post['planname'] = $params['planname'];
         $post['ptype'] = $params['virt'];
         $plans = $admin->plans($page, $reslen, $post);
-        if (!key($plans['plans'])) {
+        if (!$plans || !key($plans['plans'])) {
             ExtensionHelper::error('Virtualizor', 'Plan not found');
             return;
         }
@@ -161,7 +180,7 @@ class Virtualizor extends Server
         $post['user_pass'] = $config['password'];
         $post['fname'] = $user->name;
         $post['lname'] = $user->name;
-        $post['osid'] = 909;
+        $post['osid'] = $config['os'];
         $post['server_group'] = 0;
         $post['hostname'] = $config['hostname'];
         $post['rootpass'] = $config['password'];
@@ -176,7 +195,6 @@ class Virtualizor extends Server
         $post['cores'] = isset($configurableOptions['cores']) ? $configurableOptions['cores'] : $plan['cores'];
         $post['cpu_percent'] = isset($configurableOptions['cpu_percent']) ? $configurableOptions['cpu_percent'] : $plan['cpu_percent'];
         $post['vnc'] = isset($configurableOptions['vnc']) ? $configurableOptions['vnc'] : $plan['vnc'];
-        $post['vncpass'] = $config['password'];
         $post['kvm_cache'] = $plan['kvm_cache'];
         $post['io_mode'] = $plan['io_mode'];
         $post['vnc_keymap'] = $plan['vnc_keymap'];
@@ -186,7 +204,7 @@ class Virtualizor extends Server
 
         $output = $admin->addvs_v2($post);
 
-        if (isset($output['error'])) {
+        if (isset($output['error']) && !empty($output['error'])) {
             ExtensionHelper::error('Virtualizor', $output['error']);
             return;
         }
