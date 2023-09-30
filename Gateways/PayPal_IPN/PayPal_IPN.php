@@ -7,6 +7,16 @@ use App\Classes\Extensions\Gateway;
 
 class PayPal_IPN extends Gateway
 {
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'PayPal IPN',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }   
+    
     public function pay($total, $products, $orderId)
     {
         // Redirect to PayPal

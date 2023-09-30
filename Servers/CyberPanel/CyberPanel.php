@@ -8,6 +8,16 @@ use Illuminate\Support\Facades\Http;
 
 class CyberPanel extends Server
 {
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'CyberPanel',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }
+    
     public function getConfig()
     {
         return [

@@ -9,6 +9,16 @@ use App\Extensions\Gateways\LitePay\litepayclass;
 
 class LitePay extends Gateway
 {
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'LitePay',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }
+    
     public function getConfig()
     {
         return [

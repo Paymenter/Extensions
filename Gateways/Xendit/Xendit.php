@@ -9,6 +9,16 @@ use Illuminate\Http\Request;
 
 class Xendit extends Gateway
 {
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'Xendit',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }
+    
     public function pay($total, $products, $orderId)
     {
         $url = 'https://api.xendit.co/v2/invoices';

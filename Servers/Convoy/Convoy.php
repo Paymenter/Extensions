@@ -22,6 +22,16 @@ class Convoy extends Server
         $this->apikey = ExtensionHelper::getConfig('Convoy', 'api_key');
     }
 
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'Convoy',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }
+
     public function getConfig()
     {
         return [

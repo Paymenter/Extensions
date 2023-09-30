@@ -12,6 +12,16 @@ use App\Extensions\Servers\ISPConfig\ISPConfigWS;
 
 class ISPConfig extends Server
 {
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'ISPConfig',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }
+    
     public function getConfig()
     {
         return [

@@ -9,6 +9,16 @@ use App\Classes\Extensions\Gateway;
 
 class PayU extends Gateway
 {
+    public function getMetadata()
+    {
+        return [
+            'display_name' => 'PayU',
+            'version' => '1.0.0',
+            'author' => 'Paymenter',
+            'website' => 'https://paymenter.org',
+        ];
+    }
+    
     public function getConfig()
     {
         return [
