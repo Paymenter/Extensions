@@ -74,7 +74,7 @@ class ISPConfig extends Server
         ];
     }
 
-    public function createServer($user, $params, $order, OrderProduct $product)
+    public function createServer($user, $params, $order, $product, $configurableOptions)
     {
         $webService = new ISPConfigWS(
             array(
@@ -177,7 +177,7 @@ class ISPConfig extends Server
         return $result['client_id'];
     }
 
-    public function suspendServer(User $user, $params, Orders $order, OrderProducts $product)
+    public function suspendServer($user, $params, $order, $product, $configurableOptions)
     {
         // deactivate the domain
         $webService = new ISPConfigWS(
@@ -210,7 +210,7 @@ class ISPConfig extends Server
         $result = json_decode($result, true);
     }
 
-    public function unsuspendServer(User $user, $params, Order $order, OrderProduct $product)
+    public function unsuspendServer($user, $params, $order, $product, $configurableOptions)
     {
         // deactivate the domain
         $webService = new ISPConfigWS(
@@ -233,7 +233,7 @@ class ISPConfig extends Server
         $result = json_decode($result, true);
     }
 
-    public function terminateServer($user, $params, $order)
+    public function terminateServer($user, $params, $order, $product, $configurableOptions)
     {
 
         $webService = new ISPConfigWS(
