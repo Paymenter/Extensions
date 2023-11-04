@@ -210,10 +210,12 @@ class Convoy extends Server
         $options = [];
         foreach ($os['data'] as $os) {
             foreach ($os['templates'] as $template) {
-                $options[] = [
-                    'value' => $template[0]['uuid'],
-                    'name' => $template[0]['name']
-                ];
+                foreach ($template as $template1) {
+                    $options[] = [
+                        'value' => $template1['uuid'],
+                        'name' => $template1['name']
+                    ];
+                }
             }
         }
         return $options;
