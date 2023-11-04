@@ -135,16 +135,16 @@ class Convoy extends Server
 
     public function createServer($user, $params, $order, $orderProduct, $configurableOptions)
     {
-        $node = $params['node'];
+        $node = $configurableOptions['node'] ?? $params['node'];
         $os = $params['config']['os'];
         $hostname = $params['config']['hostname'];
         $password = $params['config']['password'];
-        $cpu = $params['cpu'];
-        $ram = $params['ram'];
-        $disk = $params['disk'];
-        $bandwidth = $params['bandwidth'];
-        $snapshot = $params['snapshot'];
-        $backups = $params['backups'];
+        $cpu = $configurableOptions['cpu'] ?? $params['cpu'];
+        $ram = $configurableOptions['ram'] ?? $params['ram'];
+        $disk = $configurableOptions['disk'] ?? $params['disk'];
+        $bandwidth = $configurableOptions['bandwidth'] ?? $params['bandwidth'];
+        $snapshot = $configurableOptions['snapshot'] ?? $params['snapshot'];
+        $backups = $configurableOptions['backups'] ?? $params['backups'];
         if ($params['auto_assign_ip']) {
             $ip = $this->request('get', 'nodes/' . $node . '/addresses', [
                 'filter[server_id]' => null
