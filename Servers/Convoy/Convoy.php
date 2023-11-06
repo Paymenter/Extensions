@@ -26,7 +26,7 @@ class Convoy extends Server
     {
         return [
             'display_name' => 'Convoy',
-            'version' => '1.0.0',
+            'version' => '1.1.1',
             'author' => 'Paymenter',
             'website' => 'https://paymenter.org',
         ];
@@ -146,35 +146,34 @@ class Convoy extends Server
         $snapshot = $configurableOptions['snapshot'] ?? $params['snapshot'];
         $backups = $configurableOptions['backups'] ?? $params['backups'];
         if ($params['auto_assign_ip']) {
-            $ip = $this->request('get', 'nodes/' . $node . '/addresses', [
-                'filter[server_id]' => null
-            ]);
+            $ip = $this->request('get', 'nodes/' . $node . '/addresses?filter[server_id]');
+
             $ip = $ip['data'][0]['id'];
         } else {
             $ip = null;
         }
 
         $data = [
+            'node_id' => (int) $node,
             'user_id' => $this->getUser($user, $params['config']['password']),
-            'node_id' => $node,
-            'hostname' => $hostname,
             'name' => $hostname . ' ' . $user->name,
-            'account_password' => $password,
+            'hostname' => $hostname,
+            'vmid' => null,
             'limits' => [
-                'cpu' => $cpu,
+                'cpu' => (int) $cpu,
                 'memory' => $ram * 1024 * 1024,
                 'disk' => $disk * 1024 * 1024 * 1024,
-                'bandwidth' => $bandwidth,
-                'snapshots' => $snapshot,
-                'backups' => $backups,
+                'snapshots' => (int) $snapshot,
+                'bandwidth' => (int) $bandwidth == 0 ? null : (int) $bandwidth,
+                'backups' => (int) $backups == 0 ? null : (int) $backups,
                 'address_ids' => [
                     $ip
                 ]
             ],
-            'vmid' => null,
+            'account_password' => $password,
             'template_uuid' => $os,
             'should_create_server' => true,
-            'start_on_completion' => true,
+            'start_on_completion' => false,
         ];
 
 
@@ -236,9 +235,15 @@ class Convoy extends Server
 
     private function request($method, $url, $data = [])
     {
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apikey,
-        ])->$method($this->hostname . '/api/application/' . $url, $data);
+        if (!empty($data)) {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apikey,
+            ])->acceptJson()->$method($this->hostname . '/api/application/' . $url, $data);
+        } else {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->apikey,
+            ])->acceptJson()->$method($this->hostname . '/api/application/' . $url);
+        }
 
         return $response->json();
     }
