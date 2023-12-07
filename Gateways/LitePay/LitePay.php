@@ -44,7 +44,7 @@ class LitePay extends Gateway
             'vendor' => ExtensionHelper::getConfig('LitePay', 'merchant_id'),
             'secret' => ExtensionHelper::getConfig('LitePay', 'secret'),
             'invoice' => $invoiceId,
-            'price' => $total,
+            'price' => number_format($total, 2, '.', ''),
             'currency' => ExtensionHelper::getCurrency(),
             'callbackUrl' => url('/extensions/litepay/webhook') . '?invoiceId=' . $invoiceId . '&secret=' . ExtensionHelper::getConfig('LitePay', 'secret'),
             'returnUrl' => route('clients.invoice.show', $invoiceId),
