@@ -115,6 +115,7 @@ class Convoy extends Server
                 'type' => 'text',
                 'friendlyName' => 'Hostname',
                 'required' => true,
+                'validation' => 'min:4|regex:/^[a-zA-Z0-9.-]+$/'
             ],
             [
                 'name' => 'os',
