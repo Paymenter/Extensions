@@ -63,19 +63,19 @@ class Convoy extends Server
             [
                 'name' => 'ram',
                 'type' => 'text',
-                'friendlyName' => 'RAM (MB)',
+                'friendlyName' => 'RAM (MiB)',
                 'required' => true
             ],
             [
                 'name' => 'disk',
                 'type' => 'text',
-                'friendlyName' => 'Disk (GB)',
+                'friendlyName' => 'Disk (MiB)',
                 'required' => true
             ],
             [
                 'name' => 'bandwidth',
                 'type' => 'text',
-                'friendlyName' => 'Bandwidth (GB)',
+                'friendlyName' => 'Bandwidth (MiB)',
                 'required' => false
             ],
             [
@@ -149,9 +149,9 @@ class Convoy extends Server
         if ($params['auto_assign_ip']) {
             $ip = $this->request('get', 'nodes/' . $node . '/addresses?filter[server_id]');
 
-            $ip = $ip['data'][0]['id'];
+            $ip = [$ip['data'][0]['id']];
         } else {
-            $ip = null;
+            $ip = [];
         }
 
         $data = [
@@ -163,13 +163,11 @@ class Convoy extends Server
             'limits' => [
                 'cpu' => (int) $cpu,
                 'memory' => $ram * 1024 * 1024,
-                'disk' => $disk * 1024 * 1024 * 1024,
+                'disk' => $disk * 1024 * 1024,
                 'snapshots' => (int) $snapshot,
-                'bandwidth' => (int) $bandwidth == 0 ? null : (int) $bandwidth,
+                'bandwidth' => (int) $bandwidth == 0 ? null : (int) $bandwidth * 1024 * 1024,
                 'backups' => (int) $backups == 0 ? null : (int) $backups,
-                'address_ids' => [
-                    $ip
-                ]
+                'address_ids' => $ip,
             ],
             'account_password' => $password,
             'template_uuid' => $os,
@@ -179,6 +177,10 @@ class Convoy extends Server
 
 
         $server = $this->request('post', 'servers', $data);
+
+        if(!isset($server['data']['id'])){
+            ExtensionHelper::error('Convoy', $server['message'] ?? 'Something went wrong');
+        }
 
         ExtensionHelper::setOrderProductConfig('server_uuid', $server['data']['uuid'], $orderProduct->id);
 
