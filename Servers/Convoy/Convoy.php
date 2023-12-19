@@ -26,7 +26,7 @@ class Convoy extends Server
     {
         return [
             'display_name' => 'Convoy',
-            'version' => '1.1.1',
+            'version' => '1.2.0',
             'author' => 'Paymenter',
             'website' => 'https://paymenter.org',
         ];
