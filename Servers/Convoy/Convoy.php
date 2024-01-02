@@ -26,7 +26,7 @@ class Convoy extends Server
     {
         return [
             'display_name' => 'Convoy',
-            'version' => '1.2.0',
+            'version' => '1.3.0',
             'author' => 'Paymenter',
             'website' => 'https://paymenter.org',
         ];
@@ -178,13 +178,28 @@ class Convoy extends Server
 
         $server = $this->request('post', 'servers', $data);
 
-        if(!isset($server['data']['id'])){
+        if(!isset($server['data'])){
             ExtensionHelper::error('Convoy', $server['message'] ?? 'Something went wrong');
         }
 
         ExtensionHelper::setOrderProductConfig('server_uuid', $server['data']['uuid'], $orderProduct->id);
 
         return $server['data']['id'];
+    }
+
+    public function suspendServer($user, $params, $order, $orderProduct, $configurableOptions)
+    {
+        $this->request('post', 'servers/' . $params['config']['server_uuid'] . '/settings/suspend');
+    }
+
+    public function unsuspendServer($user, $params, $order, $orderProduct, $configurableOptions)
+    {
+        $this->request('post', 'servers/' . $params['config']['server_uuid'] . '/settings/unsuspend');
+    }
+
+    public function terminateServer($user, $params, $order, $orderProduct, $configurableOptions)
+    {
+        $this->request('delete', 'servers/' . $params['config']['server_uuid']);
     }
 
     private function getUser($user, $password)
