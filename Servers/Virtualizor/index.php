@@ -104,18 +104,18 @@ function Virtualizor_getProductConfig()
             'type' => 'dropdown',
             'required' => true,
             'options' => [
-                [
-                    'name' => 'OpenVZ',
-                    'value' => 'openvz',
-                ],
-                [
-                    'name' => 'Xen',
-                    'value' => 'xen',
-                ],
-                [
-                    'name' => 'KVM',
-                    'value' => 'kvm',
-                ],
+                ['name' => 'OpenVZ', 'value' => 'openvz'],
+                ['name' => 'Xen', 'value' => 'xen'],
+                ['name' => 'KVM', 'value' => 'kvm'],
+                ['name' => 'Xen HVM', 'value' => 'xenhvm'],
+                ['name' => 'XCP', 'value' => 'xcp'],
+                ['name' => 'XCP HVM', 'value' => 'xcphvm'],
+                ['name' => 'LXC', 'value' => 'lxc'],
+                ['name' => 'Virtuozzo OpenVZ', 'value' => 'vzo'],
+                ['name' => 'Virtuozzo KVM', 'value' => 'vzk'],
+                ['name' => 'Proxmox OpenVZ', 'value' => 'proxo'],
+                ['name' => 'Proxmox KVM / QEMU', 'value' => 'proxk'],
+                ['name' => 'Proxmox LXC', 'value' => 'proxl'],
             ],
         ],
         [
